@@ -22,8 +22,18 @@ export class CryptoBox extends Entity implements ISystem {
     let transform = this.getComponent(Transform)
 
     if (this.currentStep < 0) {
-      engine.removeSystem(this)
-      engine.removeEntity(this)
+      this.pointA = this.getNewPoint(this.pointA)
+      this.pointB = this.getNewPoint(this.pointA)
+      this.timer = 0;
+      this.duration = Math.floor(Math.random() * 7) + 3
+      this.fraction = 0;
+      this.steps = Math.floor(Math.random() * 25) + 1
+      this.currentStep = this.steps
+
+      // engine.removeSystem(this)
+      // // engine.removeEntity(this)
+
+      return
     }
     if (this.fraction < 1) {
       this.timer += dt
@@ -40,13 +50,15 @@ export class CryptoBox extends Entity implements ISystem {
       transform.scale = new Vector3(smoothscale,smoothscale,smoothscale)
     }
     else {
-      log(transform)
+      this.currentStep--
+      log("Number of steps left "+this.currentStep)
+      if (this.currentStep < 0) {
+        return;
+      }
       this.pointA = this.pointB
       this.pointB = this.getNewPoint(this.pointA)
       this.timer = 0;
       this.fraction = 0;
-      this.currentStep--
-      log("Number of steps left "+this.currentStep)
     }
   }
 
