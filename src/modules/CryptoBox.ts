@@ -3,7 +3,9 @@ export class CryptoBox extends Entity implements ISystem {
 
   public static shapes = {
     'BTC': new GLTFShape("models/BTC.glb"),
-    'ETH': new GLTFShape("models/ETH.glb")
+    'ETH': new GLTFShape("models/ETH.glb"),
+    'BTC_anim': new GLTFShape("models/BTC_anim.glb"),
+    'ETH_anim': new GLTFShape("models/ETH_anim.glb")
   }
   //Variables
   private pointA: Vector3;
@@ -14,39 +16,46 @@ export class CryptoBox extends Entity implements ISystem {
   private fraction: number;
   private steps: number;
 
+  private Created: boolean;
+  private type: string;
+
 
   //Update
   private currentStep: number;
   update(dt: number) {
 
-    let transform = this.getComponent(Transform)
+    if (this.Created == true) {
+      let transform = this.getComponent(Transform)
 
-    if (this.currentStep < 0) {
-      engine.removeSystem(this)
-      engine.removeEntity(this)
-    }
-    if (this.fraction < 1) {
-      this.timer += dt
+      if (this.currentStep <= 0) {
+        log("Box removed!")
+        engine.removeSystem(this)
+        engine.removeEntity(this)
+      }
 
-      let normalizedtime = this.timer / this.duration
-      // log("normalizedtime is: " + normalizedtime)
-      // log("X of pointA is "+ this.pointA.x)
+      if (this.fraction < 1) {
+        this.timer += dt
 
-      this.fraction = this.easeInQuart(normalizedtime)
-      // log("fraction is: " + this.fraction)
-      let smoothscale = (this.currentStep - this.fraction) / this.steps
-      // log("smoothscale is " + smoothscale)
-      transform.position = Vector3.Lerp(this.pointA, this.pointB, this.fraction)
-      transform.scale = new Vector3(smoothscale,smoothscale,smoothscale)
-    }
-    else {
-      log(transform)
-      this.pointA = this.pointB
-      this.pointB = this.getNewPoint(this.pointA)
-      this.timer = 0;
-      this.fraction = 0;
-      this.currentStep--
-      log("Number of steps left "+this.currentStep)
+        let normalizedtime = this.timer / this.duration
+        // log("normalizedtime is: " + normalizedtime)
+        // log("X of pointA is "+ this.pointA.x)
+
+        this.fraction = this.easeInQuart(normalizedtime)
+        // log("fraction is: " + this.fraction)
+        let smoothscale = (this.currentStep - this.fraction) / this.steps
+        // log("smoothscale is " + smoothscale)
+        transform.position = Vector3.Lerp(this.pointA, this.pointB, this.fraction)
+        transform.scale = new Vector3(smoothscale, smoothscale, smoothscale)
+      }
+      else {
+        log(transform)
+        this.pointA = this.pointB
+        this.pointB = this.getNewPoint(this.pointA)
+        this.timer = 0;
+        this.fraction = 0;
+        this.currentStep--
+        log("Number of steps left " + this.currentStep)
+      }
     }
   }
 
@@ -70,24 +79,58 @@ export class CryptoBox extends Entity implements ISystem {
 
   //Filter for array
   inScene(item: Vector3): boolean {
-    let validX = item.x < 30.5 && item.x > 1.5;
-    let validY = item.y < 30.5 && item.y > 1.5;
-    let validZ = item.z < 30.5 && item.z > 1.5;
+    let validX = item.x <= 30.5 && item.x >= 1.5;
+    let validY = item.y <= 30.5 && item.y >= 1.5;
+    let validZ = item.z <= 30.5 && item.z >= 1.5;
     if (validX && validY && validZ) {
       return true
     } else {
-      log('skiped', item.x,item.y,item.z)
+      log('skiped', item.x, item.y, item.z)
     }
     return false
   }
 
+  //Animation of creation
+  creation() {
+    this.addComponent(new Animator())
+    switch (this.type) {
+      case 'BTS_anim': {
+        const anim_random01_BTS_little = new AnimationState("anim_random01_BTS_little")
+        this.getComponent(Animator).addClip(anim_random01_BTS_little)
+        anim_random01_BTS_little.play()
+        anim_random01_BTS_little.looping = true
+        utils.setTimeout(900000, () => {
+          this.addComponentOrReplace(CryptoBox.shapes["BTC"])
+          this.removeComponent(Animator)
+          this.Created = true
+        })
+        break;
+      }
+
+      case 'ETH_anim': {
+        const anim_random01_ETH_little = new AnimationState("anim_random01_ETH_little")
+        this.getComponent(Animator).addClip(anim_random01_ETH_little)
+        anim_random01_ETH_little.play()
+        anim_random01_ETH_little.looping = true
+        utils.setTimeout(15000, () => {
+          this.addComponentOrReplace(CryptoBox.shapes["ETH"])
+          this.removeComponent(Animator)
+          this.Created = true
+        })
+        break;
+      }
+
+    }
+  }
+
+
 
   //Constructor
-  constructor(parent: IEntity, type: string, _pointA: Vector3, _duration: number, _steps: number) {
+  constructor(parent: IEntity, _type: string, _pointA: Vector3, _duration: number, _steps: number) {
     super("box")
 
     this.setParent(parent)
-    this.addComponentOrReplace(CryptoBox.shapes[type])
+    this.addComponentOrReplace(CryptoBox.shapes[_type])
 
     this.addComponentOrReplace(new Transform({
       position: _pointA,
@@ -95,14 +138,18 @@ export class CryptoBox extends Entity implements ISystem {
 
 
     this.timer = 0;
-    this.duration = _duration
+    this.duration = _duration;
     this.fraction = 0;
-    this.currentStep = _steps
-    this.steps = _steps
+    this.currentStep = _steps;
+    this.steps = _steps;
 
-    this.pointA = _pointA
-    this.pointB = this.getNewPoint(this.pointA)
+    this.pointA = _pointA;
+    this.pointB = this.getNewPoint(this.pointA);
 
+    this.Created = false;
+    this.type = _type;
+
+    this.creation()
     engine.addSystem(this)
   }
 }
