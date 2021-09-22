@@ -19,24 +19,59 @@ floor.addComponentOrReplace(new Transform({
   scale: new Vector3(2, 2, 2)
 }))
 
+import blockchain_data from "./blockchain_data";
 
-for (let i = 0; i<300;i++){
+let tx_count_sum = 0
+let tx_cost_sum = 0
 
-  let x = Math.floor(Math.random() * 10)
-  let y = Math.floor(Math.random() * 10)
-  let z = Math.floor(Math.random() * 10)
+const block_count = blockchain_data.length
 
-  let steps = Math.floor(Math.random() * 25) + 1
-  let step_duration = Math.floor(Math.random() * 7) + 3
+for (let i = 0; i<block_count;i++) {
+  const block = blockchain_data[i]
+
+  const tx_count = parseInt(block[1])
+  const tx_cost = parseFloat(block[2])
+
+  tx_count_sum += tx_count
+  tx_cost_sum += tx_cost
+}
+
+const tx_count_div = tx_count_sum / block_count / 10
+const tx_cost_div = tx_cost_sum / block_count / 4
+
+function get_random_pos() {
+  let x = Math.floor(Math.random() * 29)
+  let y = Math.floor(Math.random() * 29)
+  let z = Math.floor(Math.random() * 29)
+  const pos = new Vector3(1.5 + x, 3.5 + y, 1.5 + z)
+
+  return pos
+}
+
+for (let i = 0; i<block_count*0.66;i++){
+  const block = blockchain_data[i]
+  const tx_count = parseInt(block[1])
+  const tx_cost = parseFloat(block[2])
+
+
+  // let steps = Math.floor(Math.random() * 25) + 1
+  // let step_duration = Math.floor(Math.random() * 7) + 3
+  let steps = Math.floor(tx_count / tx_count_div)
+  let step_duration = Math.floor(tx_cost / tx_cost_div)
+  log('steps',steps, 'step duration', step_duration)
   const type = Math.floor(Math.random() * 100)
+    const Exp = new CryptoBox(scene, "ETH", get_random_pos(), step_duration, steps)
+}
 
-  const pos = new Vector3(5 + (3 * x), 5 + (3 * y), 5 + (3 * z))
+for (let i = 0; i<block_count;i++){
+  const block = blockchain_data[i]
+  const tx_count = parseInt(block[1])
+  const tx_cost = parseFloat(block[2])
 
-  if (type >= 40) {
-    const Exp = new CryptoBox(scene, "ETH", pos, step_duration, steps)
-  } else {
-    const ExpBtc = new CryptoBox(scene, "BTC", pos, step_duration * 4, steps * 4)
-  }
+  let steps = Math.floor(tx_count / tx_count_div)
+  let step_duration = Math.floor(tx_cost / tx_cost_div)
+
+  const ExpBtc = new CryptoBox(scene, "BTC", get_random_pos(), step_duration * 4, steps * 4)
 }
 
 
