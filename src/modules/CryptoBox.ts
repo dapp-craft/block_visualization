@@ -17,33 +17,23 @@ export class CryptoBox extends Entity {
   private steps: number;
   private currentStep: number;
 
-  private Created: boolean;
+  private Formed: Boolean;
+  private Created: Boolean;
   private type: string;
 
 
   //Update
 
   update(dt: number) {
-
     if (this.Created == true) {
       let transform = this.getComponent(Transform)
 
-      if (this.currentStep <= 0) {
-        this.pointA = this.getNewPoint(this.pointA)
-        this.pointB = this.getNewPoint(this.pointA)
-        this.timer = 0;
-        this.duration = Math.floor(Math.random() * 7) + 3
-        this.fraction = 0;
-        this.steps = Math.floor(Math.random() * 25) + 1
-        this.currentStep = this.steps
-        
-      
-        this.creation()
-  
+      if (this.currentStep < 0) {
+        this.Formed = false;
+        this.Created = false;
         // engine.removeSystem(this)
-        // // engine.removeEntity(this)
-  
-        return
+        // engine.removeEntity(this)
+        return;
       }
 
       if (this.fraction < 1) {
@@ -62,8 +52,11 @@ export class CryptoBox extends Entity {
       }
       else {
         this.currentStep--
-        log("Number of steps left "+this.currentStep)
+        // log("Number of steps left " + this.currentStep)
         if (this.currentStep < 0) {
+          this.Formed = false;
+          this.Created = false;
+          log("This one is done:"+this.Formed+" "+this.Created)
           return;
         }
         this.pointA = this.pointB
@@ -100,60 +93,67 @@ export class CryptoBox extends Entity {
     if (validX && validY && validZ) {
       return true
     } else {
-      log('skiped', item.x, item.y, item.z)
+      // log('skiped', item.x, item.y, item.z)
     }
     return false
   }
 
   //Animation of creation
   creation() {
-    this.Created = false;
+    this.pointA = this.pointB
+    this.pointB = this.getNewPoint(this.pointA)
+    this.timer = 0;
+    this.fraction = 0;
+    this.currentStep = this.steps
 
-    this.getComponent(Transform).scale = new Vector3(1,1,1)
+    this.getComponent(Transform).scale = new Vector3(1, 1, 1)
     this.addComponent(new Animator())
-    this.addComponentOrReplace(CryptoBox.shapes[this.type])
-    log("type is "+this.type)
+    this.addComponentOrReplace(CryptoBox.shapes[this.type+ "_anim"])
+    // log("type is " + this.type)
 
-    switch (this.type) {
+    this.Formed=true
+
+    switch (this.type+"_anim") {
       case 'BTS_anim': {
         const anim_random01_BTS_little = new AnimationState("anim_random01_BTS_little")
         this.getComponent(Animator).addClip(anim_random01_BTS_little)
         anim_random01_BTS_little.play()
-        anim_random01_BTS_little.looping = true
         utils.setTimeout(900000, () => {
+          this.removeComponent(Animator)
           this.addComponentOrReplace(CryptoBox.shapes["BTC"])
-           this.removeComponent(Animator)
+          log("Created BTC box!")
           this.Created = true
         })
         break;
       }
 
       case 'ETH_anim': {
-         const anim_random01_ETH_little = new AnimationState("anim_random01_ETH_little")
+        const anim_random01_ETH_little = new AnimationState("anim_random01_ETH_little")
         this.getComponent(Animator).addClip(anim_random01_ETH_little)
-         anim_random01_ETH_little.play()
-         anim_random01_ETH_little.looping = true
+        anim_random01_ETH_little.play()
         utils.setTimeout(15000, () => {
+          this.removeComponent(Animator)
           this.addComponentOrReplace(CryptoBox.shapes["ETH"])
-           this.removeComponent(Animator)
+          log("Created ETH box!")
           this.Created = true
         })
         break;
       }
-
     }
+
   }
 
 
 
   //Constructor
-  constructor(parent: IEntity, _type: string, _pointA: Vector3, _duration: number, _steps: number) {
+  constructor(parent: IEntity, _type: string, _pointA: Vector3, _duration: number, _steps: number, _Created: boolean) {
     super("box")
 
     this.setParent(parent)
     this.addComponentOrReplace(new Transform({
       position: _pointA,
     }))
+    this.addComponentOrReplace(CryptoBox.shapes[_type])
 
 
     this.timer = 0;
@@ -166,7 +166,34 @@ export class CryptoBox extends Entity {
     this.pointB = this.getNewPoint(this.pointA);
 
     this.type = _type;
+    this.Created = _Created
+    this.Formed = _Created
 
-    this.creation()
+  }
+
+
+  getCreated():Boolean{
+    if(this.Created == true){
+      return true
+    }
+    else{
+      return false
+    }
+  }
+
+  getFormed():Boolean{
+    if(this.Formed == true){
+      return true
+    }
+    else{
+      return false
+    }
+  }
+  changeFormedTrue(){
+    this.Formed = true
+  }
+
+  getType(){
+    return this.type
   }
 }
