@@ -94,7 +94,7 @@ export class BoxUpdating implements ISystem {
         let tx_count_sum = 0
         let tx_cost_sum = 0
 
-        const block_count = blockchain_data.length*0.1
+        const block_count = blockchain_data.length
 
         for (let i = 0; i<block_count;i++) {
             const block = blockchain_data[i]
@@ -119,7 +119,7 @@ export class BoxUpdating implements ISystem {
                 type = 'ETH'
             }
 
-            const box = new CryptoBox(parent, type, false)
+            const box = new CryptoBox(parent, type, false,this.liveBoxes)
             this.setupBox(box)
             this.liveBoxes.push(box)
         }

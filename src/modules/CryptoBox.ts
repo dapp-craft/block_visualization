@@ -23,7 +23,9 @@ export class CryptoBox extends Entity {
   private readonly stepLen = 9
   private readonly sceneBoundary = {
     min: new Vector3(1.5,1.5,1.5),
-    max: new Vector3(30.5,30.5,30.5)
+    max: new Vector3(30.5,30.5,30.5),
+    doors_pos: new Vector3(16, 0, 16),
+    doors_Distance: 8
   }
 
   getRandomPosition() {
@@ -31,6 +33,10 @@ export class CryptoBox extends Entity {
     let y = Math.floor(Math.random() * (this.sceneBoundary.max.y - this.sceneBoundary.min.y))
     let z = Math.floor(Math.random() * (this.sceneBoundary.max.z - this.sceneBoundary.min.z))
     const pos = new Vector3(this.sceneBoundary.min.x + x, this.sceneBoundary.min.y + y, this.sceneBoundary.min.z + z)
+
+    if (Vector3.Distance(this.sceneBoundary.doors_pos, pos) < this.sceneBoundary.doors_Distance) {
+      return this.getRandomPosition()
+    }
 
     return pos
   }
@@ -115,6 +121,9 @@ export class CryptoBox extends Entity {
     let validY = item.y <= this.sceneBoundary.max.y && item.y >= this.sceneBoundary.min.y;
     let validZ = item.z <= this.sceneBoundary.max.z && item.z >= this.sceneBoundary.min.z;
     if (validX && validY && validZ) {
+      if (Vector3.Distance(this.sceneBoundary.doors_pos, item) < this.sceneBoundary.doors_Distance) {
+        return false
+      }
       return true
     } else {
       // log('skiped', item.x, item.y, item.z)
@@ -149,12 +158,28 @@ export class CryptoBox extends Entity {
 
 
   //Constructor
-  constructor(parent: IEntity, _type: string, pending: boolean) {
+  constructor(parent: IEntity, _type: string, pending: boolean, boxes:CryptoBox[]=[]) {
     super("box")
 
     this.type = _type;
 
-    this.pointA = this.getRandomPosition();
+    let goodPoint = true
+    for(let i = 0; i < 10;i++) {
+      this.pointA = this.getRandomPosition();
+      goodPoint = true
+
+      for (let j = 0; j < boxes.length; j++) {
+        const box = boxes[j]
+        if (Vector3.Distance(box.pointA, this.pointA) < 5) {
+          goodPoint = false
+          break
+        }
+      }
+      if (goodPoint) {
+        break
+      }
+    }
+    if (!goodPoint) log('not good pos', goodPoint)
     this.pointB = this.getNewPoint(this.pointA);
 
     this.addComponentOrReplace(new Transform({
