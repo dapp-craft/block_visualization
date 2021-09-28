@@ -42,9 +42,11 @@ export class CryptoBox extends Entity {
     if (this.live) {
       let transform = this.getComponent(Transform)
 
-      if (this.currentStep < 0) {
+      if (this.currentStep <= 0) {
         this.died = true;
         this.live = false;
+        transform.scale = new Vector3(0, 0, 0)
+
         // engine.removeSystem(this)
         // engine.removeEntity(this)
         return;
@@ -122,8 +124,14 @@ export class CryptoBox extends Entity {
 
   //Animation of creation
   creation() {
-    this.pointA = this.getRandomPosition()
-    this.pointB = this.getNewPoint(this.pointA)
+    this.pointA = this.getRandomPosition();
+    this.pointB = this.getNewPoint(this.pointA);
+
+    this.addComponentOrReplace(new Transform({
+      position: this.pointA,
+      scale:new Vector3(1, 1, 1)
+    }))
+
     this.timer = 0;
     this.fraction = 0;
 
@@ -131,8 +139,6 @@ export class CryptoBox extends Entity {
     this.duration = Math.floor(Math.random() * 7) + 3
 
     this.currentStep = this.steps
-
-    this.getComponent(Transform).scale = new Vector3(1, 1, 1)
 
     this.died=false
     this.live=false

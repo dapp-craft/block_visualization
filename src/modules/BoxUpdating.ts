@@ -36,10 +36,12 @@ export class BoxUpdating implements ISystem {
             return !box.isLive() && !box.isDied()
         })
 
-        for (let i = 0; i < this.diedBoxes.length; i++) {
-            const box = this.diedBoxes[i];
-            this.pendingBoxes.push(box);
-            box.creation()
+        if (this.pendingBoxes.length <= 2) {
+            for (let i = 0; i < this.diedBoxes.length; i++) {
+                const box = this.diedBoxes[i];
+                this.pendingBoxes.push(box);
+                box.creation()
+            }
         }
 
         this.diedBoxes = this.diedBoxes.filter(box => {
