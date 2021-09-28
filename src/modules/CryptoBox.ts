@@ -149,7 +149,7 @@ export class CryptoBox extends Entity {
 
 
   //Constructor
-  constructor(parent: IEntity, _type: string, _duration: number, _steps: number, pending: boolean) {
+  constructor(parent: IEntity, _type: string, pending: boolean) {
     super("box")
 
     this.type = _type;
@@ -162,12 +162,6 @@ export class CryptoBox extends Entity {
     }))
 
     this.setParent(parent)
-
-    this.timer = 0;
-    this.duration = _duration;
-    this.fraction = 0;
-    this.currentStep = _steps;
-    this.steps = _steps;
 
     if (pending) {
       this.live = false
@@ -209,17 +203,32 @@ export class CryptoBox extends Entity {
     animState.stop()
     animState.play()
     const boxType = this.type
-    this.addComponent(animator)
-    let pendingTimeout = 900000
+    this.addComponentOrReplace(animator)
+    let pendingTimeout = 600000
     if (this.type === 'ETH') {
       pendingTimeout = 15000
     }
     utils.setTimeout(pendingTimeout, () => {
-      this.removeComponent(Animator)
-      this.addComponentOrReplace(CryptoBox.shapes[boxType])
       log('live',boxType,'box!')
       this.live = true
     })
 
+  }
+
+  makeLive() {
+    this.removeComponent(Animator)
+    this.addComponentOrReplace(CryptoBox.shapes[this.type])
+  }
+
+  setType(type: string) {
+    this.type = type
+  }
+
+  setup(_steps: number, _step_duration: number) {
+    this.timer = 0;
+    this.duration = _step_duration;
+    this.fraction = 0;
+    this.currentStep = _steps;
+    this.steps = _steps;
   }
 }
