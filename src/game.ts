@@ -20,28 +20,4 @@ floor.addComponentOrReplace(new Transform({
   scale: new Vector3(2, 2, 2)
 }))
 
-let gameArrayOfBox = []
-
-for (let i = 0; i < 147; i++) {
-
-  let x = Math.floor(Math.random() * 10)
-  let y = Math.floor(Math.random() * 10)
-  let z = Math.floor(Math.random() * 10)
-
-  let steps = Math.floor(Math.random() * 25) + 1
-  let step_duration = Math.floor(Math.random() * 7) + 3
-  const type = Math.floor(Math.random() * 100)
-
-  const pos = new Vector3(1.5 + (3 * x), 5 + (3 * y), 1.5 + (3 * z))
-  const createdTrue = true
-
-  if (type >= 40) {
-    const ExpEth = new CryptoBox(scene, "ETH", pos, step_duration, steps,createdTrue)
-    gameArrayOfBox.push(ExpEth)
-  } else {
-    const ExpBtc = new CryptoBox(scene, "BTC", pos, step_duration * 4, steps * 4,createdTrue)
-    gameArrayOfBox.push(ExpBtc)
-  }
-}
-
-const boxController = new BoxUpdating(scene, gameArrayOfBox)
+const boxController = new BoxUpdating(scene, 150)
