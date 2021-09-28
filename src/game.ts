@@ -1,5 +1,3 @@
-import * as utils from "@dcl/ecs-scene-utils";
-import { CryptoBox } from "src/modules/CryptoBox";
 import { BoxUpdating } from "src/modules/BoxUpdating";
 
 const scene = new Entity('scene')
@@ -21,3 +19,11 @@ floor.addComponentOrReplace(new Transform({
 }))
 
 const boxController = new BoxUpdating(scene, 150)
+
+Input.instance.subscribe("BUTTON_DOWN", ActionButton.PRIMARY, false, (e) => {
+  boxController.turnOff()
+})
+Input.instance.subscribe("BUTTON_DOWN", ActionButton.SECONDARY, false, (e) => {
+  boxController.turnOn(scene)
+})
+

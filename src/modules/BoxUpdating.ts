@@ -1,7 +1,7 @@
 import {CryptoBox} from "src/modules/CryptoBox";
 import blockchain_data from "../blockchain_data";
 
-export class BoxUpdating implements ISystem {
+export class BoxUpdating extends Entity implements ISystem {
     private liveBoxes: CryptoBox[];
 
     private pendingBoxes: CryptoBox[] = [];
@@ -89,6 +89,9 @@ export class BoxUpdating implements ISystem {
 
 
     constructor(parent: IEntity, boxCount:number) {
+        super('box_parent')
+        this.setParent(parent)
+
         this.liveBoxes = []
 
         let tx_count_sum = 0
@@ -111,27 +114,38 @@ export class BoxUpdating implements ISystem {
 
         this.block_stats.block_index = 0
 
-        for (let i = 0; i<boxCount;i++){
-
+        for (let i = 0; i<boxCount;i++) {
             let type = 'BTC'
             const typeRand = Math.floor(Math.random() * 100)
             if (typeRand >= 42) {
                 type = 'ETH'
             }
 
-            const box = new CryptoBox(parent, type, false,this.liveBoxes)
+            const box = new CryptoBox(this, type, false,this.liveBoxes)
             this.setupBox(box)
             this.liveBoxes.push(box)
         }
 
-        const ETH1 = new CryptoBox(parent, "ETH", true)
+        const ETH1 = new CryptoBox(this, "ETH", true)
         this.setupBox(ETH1)
         this.diedBoxes.push(ETH1)
 
-        const BTC1 = new CryptoBox(parent, "BTC", true)
+        const BTC1 = new CryptoBox(this, "BTC", true)
         this.setupBox(BTC1)
         this.diedBoxes.push(BTC1)
 
         engine.addSystem(this)
+    }
+
+    turnOn(parent: IEntity) {
+        engine.addSystem(this)
+        this.addComponentOrReplace(new Transform({scale: Vector3.One()}))
+        this.setParent(parent)
+    }
+
+    turnOff() {
+        engine.removeSystem(this)
+        this.addComponentOrReplace(new Transform({scale: Vector3.Zero()}))
+        this.setParent(null)
     }
 }
