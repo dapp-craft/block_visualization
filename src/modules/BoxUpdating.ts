@@ -86,7 +86,7 @@ export class BoxUpdating extends Entity implements ISystem {
         const tx_cost = parseFloat(block[2])
 
         let steps = Math.floor(tx_count / this.block_stats.tx_count_div)
-        let step_duration = Math.floor(tx_cost / this.block_stats.tx_cost_div)
+        let step_duration = tx_cost / this.block_stats.tx_cost_div
 
         if(box.getType() === 'BTC') {
             steps *= 8
@@ -118,8 +118,8 @@ export class BoxUpdating extends Entity implements ISystem {
             tx_cost_sum += tx_cost
         }
 
-        this.block_stats.tx_count_div = tx_count_sum / block_count / 10
-        this.block_stats.tx_cost_div = tx_cost_sum / block_count / 4
+        this.block_stats.tx_count_div = tx_count_sum / block_count / 1000
+        this.block_stats.tx_cost_div = tx_cost_sum / block_count / 0.1
 
         this.block_stats.block_index = 0
 

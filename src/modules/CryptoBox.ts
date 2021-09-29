@@ -21,7 +21,7 @@ export class CryptoBox extends Entity {
   private died: boolean;
   private live: boolean;
   private type: string;
-  private readonly stepLen = 9
+  private readonly stepLen = 0.1
   private readonly sceneBoundary = {
     min: new Vector3(1.5,1.5,1.5),
     max: new Vector3(30.5,30.5,30.5),
