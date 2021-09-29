@@ -18,7 +18,7 @@ floor.addComponentOrReplace(new Transform({
   scale: new Vector3(2, 2, 2)
 }))
 
-const boxController = new BoxUpdating(scene, 150)
+const boxController = new BoxUpdating(scene, 150, 5)
 
 Input.instance.subscribe("BUTTON_DOWN", ActionButton.PRIMARY, false, (e) => {
   boxController.turnOff()

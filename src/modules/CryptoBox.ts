@@ -16,6 +16,7 @@ export class CryptoBox extends Entity {
   private fraction: number;
   private steps: number;
   private currentStep: number;
+  private block_mining_time:number;
 
   private died: boolean;
   private live: boolean;
@@ -143,11 +144,11 @@ export class CryptoBox extends Entity {
 
     this.timer = 0;
     this.fraction = 0;
-
-    this.steps = Math.floor(Math.random() * 25) + 1 // 25
-    this.duration = Math.floor(Math.random() * 7) + 3
-
-    this.currentStep = this.steps
+    //
+    // this.steps = Math.floor(Math.random() * 25) + 1 // 25
+    // this.duration = Math.floor(Math.random() * 7) + 3
+    //
+    // this.currentStep = this.steps
 
     this.died=false
     this.live=false
@@ -158,7 +159,7 @@ export class CryptoBox extends Entity {
 
 
   //Constructor
-  constructor(parent: IEntity, _type: string, pending: boolean, boxes:CryptoBox[]=[]) {
+  constructor(parent: IEntity, _type: string, died: boolean, boxes:CryptoBox[]=[]) {
     super("box")
 
     this.type = _type;
@@ -188,10 +189,10 @@ export class CryptoBox extends Entity {
 
     this.setParent(parent)
 
-    if (pending) {
+    if (died) {
       this.live = false
-      this.died = false
-      this.pendingModel()
+      this.died = true
+      // this.pendingModel()
     } else {
       this.live = true
       this.died = false
@@ -229,11 +230,12 @@ export class CryptoBox extends Entity {
     animState.play()
     const boxType = this.type
     this.addComponentOrReplace(animator)
-    let pendingTimeout = 600000
-    if (this.type === 'ETH') {
-      pendingTimeout = 15000
+    this.block_mining_time = 5 //
+    if (boxType === 'BTC') {
+      this.block_mining_time *= 40
     }
-    utils.setTimeout(pendingTimeout, () => {
+    log('start pending', boxType, this.block_mining_time, 'secs')
+    utils.setTimeout(this.block_mining_time*1000, () => {
       log('live',boxType,'box!')
       this.live = true
     })
@@ -249,11 +251,12 @@ export class CryptoBox extends Entity {
     this.type = type
   }
 
-  setup(_steps: number, _step_duration: number) {
+  setup(_steps: number, _step_duration: number, _block_mining_time:number) {
     this.timer = 0;
     this.duration = _step_duration;
     this.fraction = 0;
     this.currentStep = _steps;
     this.steps = _steps;
+    this.block_mining_time = _block_mining_time;
   }
 }

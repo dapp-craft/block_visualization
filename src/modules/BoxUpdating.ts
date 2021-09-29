@@ -33,6 +33,7 @@ export class BoxUpdating extends Entity implements ISystem {
             const box = this.pendingBoxes[i];
             if (box.isLive()) {
                 log("box living.")
+                this.setupBox(box)
                 box.makeLive()
                 this.liveBoxes.push(box)
             } else {
@@ -69,6 +70,14 @@ export class BoxUpdating extends Entity implements ISystem {
 
     setupBox(box:CryptoBox) {
         const block = blockchain_data[this.block_stats.block_index]
+
+        let block_mining_time = 15
+        if (this.block_stats.block_index > 0) {
+            const prev_block_time = blockchain_data[this.block_stats.block_index - 1][3]
+            block_mining_time = (new Date(prev_block_time).getTime() - new Date(block[3]).getTime()) / 1000
+            // log('block_mining_time', block_mining_time)
+        }
+
         this.block_stats.block_index++
         if (this.block_stats.block_index >= blockchain_data.length) {
             this.block_stats.block_index = 0
@@ -84,11 +93,11 @@ export class BoxUpdating extends Entity implements ISystem {
             step_duration *= 6
         }
 
-        box.setup(steps, step_duration)
+        box.setup(steps, step_duration, block_mining_time)
     }
 
 
-    constructor(parent: IEntity, boxCount:number) {
+    constructor(parent: IEntity, boxCount:number, reservedBoxCount:number) {
         super('box_parent')
         this.setParent(parent)
 
@@ -126,13 +135,11 @@ export class BoxUpdating extends Entity implements ISystem {
             this.liveBoxes.push(box)
         }
 
-        const ETH1 = new CryptoBox(this, "ETH", true)
-        this.setupBox(ETH1)
-        this.diedBoxes.push(ETH1)
-
-        const BTC1 = new CryptoBox(this, "BTC", true)
-        this.setupBox(BTC1)
-        this.diedBoxes.push(BTC1)
+        for (let i = 0; i<reservedBoxCount;i++) {
+            const box = new CryptoBox(this, "ETH", true)
+            this.setupBox(box)
+            this.diedBoxes.push(box)
+        }
 
         engine.addSystem(this)
     }
