@@ -21,7 +21,7 @@ export class CryptoBox extends Entity {
   private died: boolean;
   private live: boolean;
   private type: string;
-  private readonly stepLen = 0.1
+  private readonly stepLen = 4
   private readonly sceneBoundary = {
     min: new Vector3(1.5,1.5,1.5),
     max: new Vector3(30.5,30.5,30.5),
@@ -67,6 +67,7 @@ export class CryptoBox extends Entity {
         // log("X of pointA is "+ this.pointA.x)
 
         this.fraction = this.easeInQuart(normalizedtime)
+        if (this.fraction > 1) this.fraction = 1
         // log("fraction is: " + this.fraction)
         let smoothscale = (this.currentStep - this.fraction) / this.steps
         // log("smoothscale is " + smoothscale)
