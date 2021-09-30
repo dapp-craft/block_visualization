@@ -10,7 +10,8 @@ export class BoxUpdating extends Entity implements ISystem {
     block_stats = {
         block_index: 0,
         tx_cost_div: 1,
-        tx_count_div: 1
+        tx_count_div: 1,
+        tx_cost_scale_div: 1,
     }
 
     update(dt: number) {
@@ -68,7 +69,7 @@ export class BoxUpdating extends Entity implements ISystem {
         log(this.liveBoxes.length, this.pendingBoxes.length, this.diedBoxes.length)
     }
 
-    setupBox(box:CryptoBox) {
+    setupBox(box:CryptoBox, randomFraction= false) {
         const block = blockchain_data[this.block_stats.block_index]
 
         let block_mining_time = 15
@@ -92,8 +93,21 @@ export class BoxUpdating extends Entity implements ISystem {
             steps *= 8
             step_duration *= 6
         }
+        let fraction = 0
+        if (randomFraction) {
+            fraction = Math.random() * 0.5
+        }
 
-        box.setup(steps, step_duration, block_mining_time)
+        let initScale = tx_cost / this.block_stats.tx_cost_scale_div
+
+        if (initScale > 3) {
+            initScale = 3
+        }
+        if (initScale < 0.1) {
+            initScale = 0.1
+        }
+
+        box.setup(steps, step_duration, block_mining_time, initScale, fraction)
     }
 
 
@@ -118,8 +132,9 @@ export class BoxUpdating extends Entity implements ISystem {
             tx_cost_sum += tx_cost
         }
 
-        this.block_stats.tx_count_div = tx_count_sum / block_count / 1000
-        this.block_stats.tx_cost_div = tx_cost_sum / block_count / 1
+        this.block_stats.tx_count_div = tx_count_sum / block_count / 750
+        this.block_stats.tx_cost_div = tx_cost_sum / block_count / 2
+        this.block_stats.tx_cost_scale_div = tx_cost_sum / block_count
 
         this.block_stats.block_index = 0
 
@@ -131,7 +146,7 @@ export class BoxUpdating extends Entity implements ISystem {
             }
 
             const box = new CryptoBox(this, type, false,this.liveBoxes)
-            this.setupBox(box)
+            this.setupBox(box, true)
             this.liveBoxes.push(box)
         }
 

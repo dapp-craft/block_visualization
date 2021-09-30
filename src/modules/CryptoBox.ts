@@ -28,6 +28,7 @@ export class CryptoBox extends Entity {
     doors_pos: new Vector3(16, 0, 16),
     doors_Distance: 8
   }
+  private initScale: number = 1;
 
   getRandomPosition() {
     let x = Math.floor(Math.random() * (this.sceneBoundary.max.x - this.sceneBoundary.min.x))
@@ -69,7 +70,7 @@ export class CryptoBox extends Entity {
         this.fraction = this.easeInQuart(normalizedtime)
         if (this.fraction > 1) this.fraction = 1
         // log("fraction is: " + this.fraction)
-        let smoothscale = (this.currentStep - this.fraction) / this.steps
+        let smoothscale = (this.currentStep - this.fraction) / this.steps * this.initScale
         // log("smoothscale is " + smoothscale)
         transform.position = Vector3.Lerp(this.pointA, this.pointB, this.fraction)
         transform.scale = new Vector3(smoothscale, smoothscale, smoothscale)
@@ -83,8 +84,9 @@ export class CryptoBox extends Entity {
           log("This one is died:",this.died,"live:",this.live)
           return;
         }
+        const newTargetPoint = this.getNewPoint(this.pointB, this.pointA)
         this.pointA = this.pointB
-        this.pointB = this.getNewPoint(this.pointA)
+        this.pointB = newTargetPoint
         this.timer = 0;
         this.fraction = 0;
       }
@@ -97,7 +99,7 @@ export class CryptoBox extends Entity {
   }
 
   //Check possibilities
-  getNewPoint(check: Vector3): Vector3 {
+  getNewPoint(check: Vector3, prevPoint: Vector3): Vector3 {
     const self = this
     let possarray = [
       new Vector3(check.x + this.stepLen, check.y, check.z),
@@ -106,7 +108,12 @@ export class CryptoBox extends Entity {
       new Vector3(check.x, check.y - this.stepLen, check.z),
       new Vector3(check.x, check.y, check.z + this.stepLen),
       new Vector3(check.x, check.y, check.z - this.stepLen),
-    ].filter(x => self.inScene(x))
+    ].filter(x => {
+      if (self.inScene(x)) {
+        return prevPoint != x;
+      }
+      return false;
+    })
     if (possarray.length == 0) {
       let x = Math.floor((this.sceneBoundary.max.x - this.sceneBoundary.min.x) / 2)
       let y = Math.floor((this.sceneBoundary.max.y - this.sceneBoundary.min.y) / 2)
@@ -140,7 +147,7 @@ export class CryptoBox extends Entity {
 
     this.addComponentOrReplace(new Transform({
       position: this.pointA,
-      scale:new Vector3(1, 1, 1)
+      scale:new Vector3(this.initScale, this.initScale, this.initScale)
     }))
 
     this.timer = 0;
@@ -252,12 +259,13 @@ export class CryptoBox extends Entity {
     this.type = type
   }
 
-  setup(_steps: number, _step_duration: number, _block_mining_time:number) {
+  setup(_steps: number, _step_duration: number, _block_mining_time:number, _initScale: number, _fraction:number=0) {
     this.timer = 0;
     this.duration = _step_duration;
-    this.fraction = 0;
+    this.fraction = _fraction;
     this.currentStep = _steps;
     this.steps = _steps;
     this.block_mining_time = _block_mining_time;
+    this.initScale = _initScale
   }
 }
