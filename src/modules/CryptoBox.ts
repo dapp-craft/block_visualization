@@ -29,6 +29,7 @@ export class CryptoBox extends Entity {
     doors_Distance: 8
   }
   private initScale: number = 1;
+  private currScale: number = 1;
 
   getRandomPosition() {
     let x = Math.floor(Math.random() * (this.sceneBoundary.max.x - this.sceneBoundary.min.x))
@@ -70,7 +71,7 @@ export class CryptoBox extends Entity {
         this.fraction = this.easeInQuart(normalizedtime)
         if (this.fraction > 1) this.fraction = 1
         // log("fraction is: " + this.fraction)
-        let smoothscale = (this.currentStep - this.fraction) / this.steps * this.initScale
+        let smoothscale = (this.currentStep - this.fraction) / this.steps * this.currScale
         // log("smoothscale is " + smoothscale)
         transform.position = Vector3.Lerp(this.pointA, this.pointB, this.fraction)
         transform.scale = new Vector3(smoothscale, smoothscale, smoothscale)
@@ -84,6 +85,7 @@ export class CryptoBox extends Entity {
           log("This one is died:",this.died,"live:",this.live)
           return;
         }
+        this.currScale = Math.random() * (this.initScale-1) + 1
         const newTargetPoint = this.getNewPoint(this.pointB, this.pointA)
         this.pointA = this.pointB
         this.pointB = newTargetPoint
@@ -99,7 +101,7 @@ export class CryptoBox extends Entity {
   }
 
   //Check possibilities
-  getNewPoint(check: Vector3, prevPoint: Vector3): Vector3 {
+  getNewPoint(check: Vector3, prevPoint: Vector3 = null): Vector3 {
     const self = this
     let possarray = [
       new Vector3(check.x + this.stepLen, check.y, check.z),
@@ -110,7 +112,7 @@ export class CryptoBox extends Entity {
       new Vector3(check.x, check.y, check.z - this.stepLen),
     ].filter(x => {
       if (self.inScene(x)) {
-        return prevPoint != x;
+        return prevPoint == null || !(prevPoint.x == x.x && prevPoint.y == x.y && prevPoint.z == x.z);
       }
       return false;
     })
@@ -267,5 +269,6 @@ export class CryptoBox extends Entity {
     this.steps = _steps;
     this.block_mining_time = _block_mining_time;
     this.initScale = _initScale
+    this.currScale = this.initScale
   }
 }

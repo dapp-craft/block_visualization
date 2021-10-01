@@ -133,7 +133,7 @@ export class BoxUpdating extends Entity implements ISystem {
         }
 
         this.block_stats.tx_count_div = tx_count_sum / block_count / 750
-        this.block_stats.tx_cost_div = tx_cost_sum / block_count / 2
+        this.block_stats.tx_cost_div = tx_cost_sum / block_count / 0.7
         this.block_stats.tx_cost_scale_div = tx_cost_sum / block_count
 
         this.block_stats.block_index = 0
