@@ -20,6 +20,7 @@ export class CryptoBox extends Entity {
 
   private died: boolean;
   private live: boolean;
+  private dying: boolean = false;
   private type: string;
   private readonly stepLen = 4
   private readonly sceneBoundary = {
@@ -47,50 +48,47 @@ export class CryptoBox extends Entity {
 
   //Update
 
+  nextStep() {
+    this.currScale = Math.random() * (this.initScale-1) + 1
+    const newTargetPoint = this.getNewPoint(this.pointB, this.pointA)
+    this.pointA = this.pointB
+    this.pointB = newTargetPoint
+    this.timer = 0;
+    this.fraction = 0;
+    if (this.dying) {
+      this.duration *= 0.9
+    }
+  }
+
+  kill() {
+    this.died = true;
+    this.live = false;
+    log("This one is died:",this.died,"live:",this.live)
+    this.getComponent(Transform).scale = new Vector3(0, 0, 0)
+  }
+
   update(dt: number) {
-    if (this.live) {
+    if (this.live && this.fraction < 1) {
+      this.timer += dt
+      let normalizedtime = this.timer / this.duration
+      // log("normalizedtime is: " + normalizedtime)
+      // log("X of pointA is "+ this.pointA.x)
+
+      this.fraction = this.easeInQuart(normalizedtime)
+      if (this.fraction > 1) this.fraction = 1
+      // log("fraction is: " + this.fraction)
+      let smoothscale = (this.currentStep - this.fraction) / this.steps * this.currScale
+      // log("smoothscale is " + smoothscale)
       let transform = this.getComponent(Transform)
-
+      transform.position = Vector3.Lerp(this.pointA, this.pointB, this.fraction)
+      transform.scale = new Vector3(smoothscale, smoothscale, smoothscale)
+    } else {
+      this.currentStep--;
+      // log("Number of steps left " + this.currentStep)
       if (this.currentStep <= 0) {
-        this.died = true;
-        this.live = false;
-        transform.scale = new Vector3(0, 0, 0)
-
-        // engine.removeSystem(this)
-        // engine.removeEntity(this)
-        return;
-      }
-
-      if (this.fraction < 1) {
-        this.timer += dt
-
-        let normalizedtime = this.timer / this.duration
-        // log("normalizedtime is: " + normalizedtime)
-        // log("X of pointA is "+ this.pointA.x)
-
-        this.fraction = this.easeInQuart(normalizedtime)
-        if (this.fraction > 1) this.fraction = 1
-        // log("fraction is: " + this.fraction)
-        let smoothscale = (this.currentStep - this.fraction) / this.steps * this.currScale
-        // log("smoothscale is " + smoothscale)
-        transform.position = Vector3.Lerp(this.pointA, this.pointB, this.fraction)
-        transform.scale = new Vector3(smoothscale, smoothscale, smoothscale)
-      }
-      else {
-        this.currentStep--
-        // log("Number of steps left " + this.currentStep)
-        if (this.currentStep < 0) {
-          this.died = true;
-          this.live = false;
-          log("This one is died:",this.died,"live:",this.live)
-          return;
-        }
-        this.currScale = Math.random() * (this.initScale-1) + 1
-        const newTargetPoint = this.getNewPoint(this.pointB, this.pointA)
-        this.pointA = this.pointB
-        this.pointB = newTargetPoint
-        this.timer = 0;
-        this.fraction = 0;
+        this.kill()
+      } else {
+        this.nextStep()
       }
     }
   }
@@ -217,9 +215,9 @@ export class CryptoBox extends Entity {
   isDied():boolean{
     return this.died
   }
-  kill(){
-    this.died = true
-  }
+  // kill(){
+  //   this.died = true
+  // }
 
   getType(){
     return this.type
